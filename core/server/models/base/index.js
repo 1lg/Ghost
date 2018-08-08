@@ -49,7 +49,7 @@ ghostBookshelf.plugin(plugins.collision);
 
 // Manages nested updates (relationships)
 ghostBookshelf.plugin('bookshelf-relations', {
-    allowedOptions: ['context', 'importing'],
+    allowedOptions: ['context', 'importing', 'migrating'],
     unsetRelations: true,
     hooks: {
         belongsToMany: {
@@ -113,6 +113,8 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
      * If the query runs in a txn, `_previousAttributes` will be empty.
      */
     emitChange: function (model, event, options) {
+        debug(model.tableName, event);
+
         const previousAttributes = model._previousAttributes;
 
         if (!options.transacting) {
@@ -122,7 +124,10 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         if (!model.ghostEvents) {
             model.ghostEvents = [];
 
-            if (options.importing) {
+            // CASE: when importing, deleting or migrating content, lot's of model queries are happening in one transaction
+            //       lot's of model events will be triggered. we ensure we set the max listeners to infinity.
+            //       we are using `once` - we auto remove the listener afterwards
+            if (options.importing || options.destroyAll || options.migrating) {
                 options.transacting.setMaxListeners(0);
             }
 
@@ -496,7 +501,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
         }
 
         // terms to whitelist for all methods.
-        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate'];
+        return ['context', 'withRelated', 'transacting', 'importing', 'forUpdate', 'migrating'];
     },
 
     /**
@@ -1045,7 +1050,7 @@ ghostBookshelf.Model = ghostBookshelf.Model.extend({
                         relation: 'posts_tags',
                         condition: ['posts_tags.tag_id', '=', 'tags.id']
                     },
-                    select: ['posts_tags.post_id as post_id'],
+                    select: ['posts_tags.post_id as post_id', 'tags.visibility'],
                     whereIn: 'posts_tags.post_id',
                     whereInKey: 'post_id',
                     orderBy: 'sort_order'

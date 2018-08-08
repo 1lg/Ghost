@@ -18,11 +18,11 @@ If you've **got some code** ✨ you want to [pull request](https://docs.ghost.or
 *Quick Links:*
 - [forum](https://forum.ghost.org)
 - [user documentation](https://help.ghost.org)
-- [themes documentation](https://themes.ghost.org)
-- [api documentation](https://api.ghost.org)
-- [self-hoster guide](http://docs.ghost.org/v1/)
+- [themes documentation](https://themes.ghost.org/v1.23.0/)
+- [api documentation](https://api.ghost.org/v1.22.0/)
+- [self-hoster guide](https://docs.ghost.org/v1/)
 - [community guidelines](https://ghost.org/conduct/)
-- [dev blog](http://dev.ghost.org)
+- [dev blog](https://blog.ghost.org)
 
 ---
 

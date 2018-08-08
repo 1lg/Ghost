@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     sinon = require('sinon'),
     models = require('../../../server/models'),
     testUtils = require('../../utils'),
@@ -13,18 +13,10 @@ describe('Unit: models/tags', function () {
         sandbox.restore();
     });
 
+    before(testUtils.teardown);
+    before(testUtils.setup('tags'));
+
     describe('Edit', function () {
-        let knexMock;
-
-        before(function () {
-            knexMock = new testUtils.mocks.knex();
-            knexMock.mock();
-        });
-
-        after(function () {
-            knexMock.unmock();
-        });
-
         it('resets given empty value to null', function () {
             return models.Tag.findOne({slug: 'kitchen-sink'})
                 .then(function (tag) {

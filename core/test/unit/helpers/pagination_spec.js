@@ -1,4 +1,4 @@
-var should = require('should'), // jshint ignore:line
+var should = require('should'),
     hbs = require('../../../server/services/themes/engine'),
     configUtils = require('../../utils/configUtils'),
     path = require('path'),
@@ -28,7 +28,7 @@ describe('{{pagination}} helper', function () {
             return function () {
                 helpers.pagination.call(data);
             };
-        }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://themes.ghost.org/docs/pagination.';
+        }, expectedMessage = 'The {{pagination}} helper was used outside of a paginated context. See https://themes.ghost.org/v1.23.0/docs/pagination.';
 
         runHelper('not an object').should.throwError(expectedMessage);
         runHelper(function () {

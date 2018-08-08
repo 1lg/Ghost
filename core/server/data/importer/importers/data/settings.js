@@ -59,6 +59,11 @@ class SettingsImporter extends BaseImporter {
                 // Ensures things that are enabled in new versions, are turned on
                 obj.value = JSON.stringify(_.assign({}, JSON.parse(obj.value), labsDefaults));
             }
+
+            // CASE: we do not import slack hooks, otherwise it can happen very fast that you are pinging someone's slack channel
+            if (obj.key === 'slack') {
+                obj.value = JSON.stringify([{url: ''}]);
+            }
         });
 
         return super.beforeImport();
@@ -84,14 +89,6 @@ class SettingsImporter extends BaseImporter {
         });
 
         return Promise.all(ops);
-    }
-
-    /**
-     * We only update existing settings models.
-     * Nothing todo here.
-     */
-    afterImport() {
-        return Promise.resolve();
     }
 }
 
