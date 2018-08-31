@@ -268,6 +268,45 @@ describe('Unit: models/post', function () {
     });
 
     describe('edit', function () {
+        it('update post with options.migrating', function () {
+            const events = {
+                post: [],
+                tag: []
+            };
+
+            sandbox.stub(models.Post.prototype, 'emitChange').callsFake(function (event) {
+                events.post.push(event);
+            });
+
+            sandbox.stub(models.Tag.prototype, 'emitChange').callsFake(function (event) {
+                events.tag.push(event);
+            });
+
+            let originalUpdatedAt;
+            let originalUpdatedBy;
+
+            return models.Post.findOne({
+                id: testUtils.DataGenerator.forKnex.posts[3].id,
+                status: 'draft'
+            }, {withRelated: ['tags']})
+                .then((post) => {
+                    originalUpdatedAt = post.get('updated_at');
+                    originalUpdatedBy = post.get('updated_by');
+
+                    // post will be updated, tags relation not
+                    return models.Post.edit({
+                        html: 'changed html'
+                    }, _.merge({id: testUtils.DataGenerator.forKnex.posts[3].id, migrating: true}, testUtils.context.editor));
+                })
+                .then((post) => {
+                    post.get('updated_at').should.eql(originalUpdatedAt);
+                    post.get('updated_by').should.eql(originalUpdatedBy);
+
+                    events.post.should.eql(['edited']);
+                    events.tag.should.eql([]);
+                });
+        });
+
         it('update post, relation has not changed', function () {
             const events = {
                 post: [],
@@ -1896,14 +1935,7 @@ describe('Unit: models/post', function () {
             });
         });
 
-        it('uses v2 if Koenig is enabled', function () {
-            sandbox.stub(labs, 'isSet').callsFake(function (key) {
-                if (key === 'koenigEditor') {
-                    return true;
-                }
-                return origLabs.get(key);
-            });
-
+        it('converts correctly', function () {
             let newPost = testUtils.DataGenerator.forModel.posts[2];
 
             return models.Post.add(
@@ -1913,31 +1945,6 @@ describe('Unit: models/post', function () {
                 should.exist(post);
                 post.has('html').should.equal(true);
                 post.get('html').should.equal('<h2 id="testing">testing</h2>\n<p>mctesters</p>\n<ul>\n<li>test</li>\n<li>line</li>\n<li>items</li>\n</ul>\n');
-            });
-        });
-
-        it('uses v2 if Koenig is disabled but post is not v1 compatible', function () {
-            let newPost = testUtils.DataGenerator.forModel.posts[2];
-
-            newPost.mobiledoc = JSON.stringify({
-                version: '0.3.1',
-                atoms: [],
-                cards: [],
-                markups: [],
-                sections: [
-                    [1, 'p', [
-                        [0, [], 0, 'Test']
-                    ]]
-                ]
-            });
-
-            return models.Post.add(
-                newPost,
-                testUtils.context.editor
-            ).then((post) => {
-                should.exist(post);
-                post.has('html').should.equal(true);
-                post.get('html').should.equal('<p>Test</p>');
             });
         });
     });
